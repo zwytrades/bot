@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>zwytrades bot</title>
+    <!-- Clean Sans-Serif Font: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #09090b;
+            --card-bg: #121215;
+            --border: #27272a;
+            --text-main: #f4f4f5;
+            --text-muted: #a1a1aa;
+            --accent: #ffffff;
+            --status-green: #22c55e;
+            --status-orange: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2rem 1rem;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Subtle Background Grid */
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: radial-gradient(var(--border) 1px, transparent 1px);
+            background-size: 24px 24px;
+            opacity: 0.2;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Top Header Info Badges */
+        .badge-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 99px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            letter-spacing: 0.03em;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--status-green);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--status-green);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+            margin: auto 0;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            color: var(--text-main);
+            margin-bottom: 0.75rem;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-width: 500px;
+            margin: 0 auto 2.5rem auto;
+            line-height: 1.6;
+            font-weight: 400;
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .metric-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: left;
+            transition: border-color 0.2s ease;
+        }
+
+        .metric-card:hover {
+            border-color: #3f3f46;
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Progress Bar Section for Member Capacity */
+        .member-cap-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .member-cap-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        .member-count {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .member-cap-total {
+            color: var(--text-muted);
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 8px;
+            background-color: var(--border);
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            width: 7%; /* 7 out of 100 */
+            height: 100%;
+            background-color: var(--accent);
+            border-radius: 99px;
+            transition: width 0.3s ease;
+        }
+
+        /* Primary Discord Button */
+        .btn-discord {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background-color: var(--accent);
+            color: #000;
+            font-weight: 600;
+            font-size: 1rem;
+            padding: 14px 28px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: transform 0.15s ease, opacity 0.15s ease;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .btn-discord:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        /* Simple Footer */
+        footer {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="grid-bg"></div>
+
+    <div class="container">
+        <!-- Live Status Indicators -->
+        <div class="badge-row">
+            <div class="status-badge">
+                <span class="dot"></span>
+                <span>BOT BETA ONLINE</span>
+            </div>
+            <div class="status-badge">
+                <span style="color: var(--status-orange);">●</span>
+                <span>LIMITED ACCESS</span>
+            </div>
+        </div>
+
+        <!-- Title & Subtitle -->
+        <h1>zwytrades bot</h1>
+        <p class="subtitle">Automated liquidity screening and real-time market telemetry.</p>
+
+        <!-- Metrics Grid -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-value">68.4%</div>
+                <div class="metric-label">Filtered Accuracy Rate</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">500+</div>
+                <div class="metric-label">Daily Scans Conducted</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">3,500+</div>
+                <div class="metric-label">Rug Pulls Prevented</div>
+            </div>
+        </div>
+
+        <!-- Member Cap Progress Box -->
+        <div class="member-cap-box">
+            <div class="member-cap-header">
+                <span>Beta Access Capacity</span>
+                <span class="member-count">7 / 100 <span class="member-cap-total">spots filled</span></span>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill"></div>
+            </div>
+        </div>
+
+        <!-- Discord Call to Action Button -->
+        <a href="https://discord.gg/qekFr6M2Ww" target="_blank" class="btn-discord">
+            Join Discord (93 Spots Left)
+        </a>
+    </div>
+
+    <footer>
+        &copy; zwytrades. All rights reserved.
+    </footer>
+
+</body>
+</html>
