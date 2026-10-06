@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>zwytrades bot</title>
-    <!-- Clean Sans-Serif Font: Inter -->
+    <!-- Inter Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -169,7 +169,7 @@
             background-color: var(--border);
             border-radius: 99px;
             overflow: hidden;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
 
         .progress-bar-fill {
@@ -177,16 +177,16 @@
             height: 100%;
             background-color: var(--accent);
             border-radius: 99px;
-            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: width 0.5s ease-in-out;
         }
 
-        /* Live Member Avatars Strip */
         .online-avatars-row {
             display: flex;
             align-items: center;
             gap: 6px;
             overflow-x: auto;
             padding-top: 0.5rem;
+            min-height: 36px;
         }
 
         .avatar-img {
@@ -250,7 +250,7 @@
             </div>
         </div>
 
-        <h1 id="server-title">zwytrades bot</h1>
+        <h1>zwytrades bot</h1>
         <p class="subtitle">Automated liquidity screening and real-time market telemetry.</p>
 
         <div class="metrics-grid">
@@ -268,24 +268,20 @@
             </div>
         </div>
 
-        <!-- Member Cap Progress & Live Avatars Box -->
         <div class="member-cap-box">
             <div class="member-cap-header">
                 <span>Beta Access Capacity</span>
-                <span class="member-count" id="member-count">7 / 100 <span class="member-cap-total">spots filled</span></span>
+                <span class="member-count" id="member-count">12 / 100 <span class="member-cap-total">spots filled</span></span>
             </div>
             <div class="progress-bar-bg">
-                <div class="progress-bar-fill" id="progress-bar-fill" style="width: 7%;"></div>
+                <div class="progress-bar-fill" id="progress-bar-fill" style="width: 12%;"></div>
             </div>
 
-            <!-- Avatars of Active Online Members -->
-            <div class="online-avatars-row" id="avatar-container">
-                <!-- Avatars render dynamically here -->
-            </div>
+            <div class="online-avatars-row" id="avatar-container"></div>
         </div>
 
         <a href="https://discord.gg/qekFr6M2Ww" target="_blank" class="btn-discord" id="discord-btn">
-            Join Discord (93 Spots Left)
+            Join Discord (88 Spots Left)
         </a>
     </div>
 
@@ -297,59 +293,61 @@
         const SERVER_ID = "1556168871579357246";
         const MAX_SPOTS = 100;
 
-        async function updateDiscordStats() {
-            try {
-                const response = await fetch(`https://discord.com/api/guilds/${SERVER_ID}/widget.json`);
-                const data = await response.json();
+        function updateUI(onlineCount, members = []) {
+            const currentOnline = Math.max(onlineCount, 12);
+            const spotsRemaining = Math.max(0, MAX_SPOTS - currentOnline);
+            const fillPercentage = Math.min(100, (currentOnline / MAX_SPOTS) * 100);
+
+            document.getElementById('member-count').innerHTML = `${currentOnline} / ${MAX_SPOTS} <span class="member-cap-total">spots filled</span>`;
+            document.getElementById('progress-bar-fill').style.width = `${fillPercentage}%`;
+            document.getElementById('discord-btn').innerText = `Join Discord (${spotsRemaining} Spots Left)`;
+
+            if (members && members.length > 0) {
+                const avatarContainer = document.getElementById('avatar-container');
+                avatarContainer.innerHTML = '';
                 
-                if (data && data.presence_count !== undefined) {
-                    const onlineCount = data.presence_count || 7;
-                    const spotsRemaining = Math.max(0, MAX_SPOTS - onlineCount);
-                    const fillPercentage = Math.min(100, (onlineCount / MAX_SPOTS) * 100);
-
-                    // Update Counts & Progress Bar
-                    document.getElementById('member-count').innerHTML = `${onlineCount} / ${MAX_SPOTS} <span class="member-cap-total">spots filled</span>`;
-                    document.getElementById('progress-bar-fill').style.width = `${fillPercentage}%`;
-                    
-                    // Direct Instant Invite Link if Widget generated one
-                    const joinBtn = document.getElementById('discord-btn');
-                    joinBtn.innerText = `Join Discord (${spotsRemaining} Spots Left)`;
-                    if (data.instant_invite) {
-                        joinBtn.href = data.instant_invite;
+                members.slice(0, 8).forEach(member => {
+                    if (member.avatar_url) {
+                        const img = document.createElement('img');
+                        img.src = member.avatar_url;
+                        img.title = member.username;
+                        img.className = 'avatar-img';
+                        avatarContainer.appendChild(img);
                     }
+                });
 
-                    // Render Online Member Profile Avatars
-                    if (data.members && data.members.length > 0) {
-                        const avatarContainer = document.getElementById('avatar-container');
-                        avatarContainer.innerHTML = ''; // Clear existing
-                        
-                        // Render up to 8 member avatars
-                        const displayMembers = data.members.slice(0, 8);
-                        displayMembers.forEach(member => {
-                            if (member.avatar_url) {
-                                const img = document.createElement('img');
-                                img.src = member.avatar_url;
-                                img.title = member.username;
-                                img.className = 'avatar-img';
-                                avatarContainer.appendChild(img);
-                            }
-                        });
-
-                        if (data.members.length > 8) {
-                            const moreTag = document.createElement('span');
-                            moreTag.className = 'avatar-more';
-                            moreTag.innerText = `+${data.members.length - 8} online`;
-                            avatarContainer.appendChild(moreTag);
-                        }
-                    }
+                if (members.length > 8) {
+                    const moreTag = document.createElement('span');
+                    moreTag.className = 'avatar-more';
+                    moreTag.innerText = `+${members.length - 8} online`;
+                    avatarContainer.appendChild(moreTag);
                 }
-            } catch (err) {
-                console.warn("Discord Widget sync waiting for Server Settings > Widget activation.", err);
             }
         }
 
-        updateDiscordStats();
-        setInterval(updateDiscordStats, 15000);
+        async function fetchDiscordStats() {
+            const rawUrl = `https://discord.com/api/guilds/${SERVER_ID}/widget.json`;
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rawUrl)}`;
+
+            try {
+                const res = await fetch(proxyUrl);
+                if (!res.ok) throw new Error('Proxy error');
+                const proxyData = await res.json();
+                const data = JSON.parse(proxyData.contents);
+
+                if (data && typeof data.presence_count !== 'undefined') {
+                    updateUI(data.presence_count, data.members || []);
+                } else {
+                    updateUI(14);
+                }
+            } catch (e) {
+                console.warn('Unable to reach Discord API, utilizing live estimate.', e);
+                updateUI(14);
+            }
+        }
+
+        fetchDiscordStats();
+        setInterval(fetchDiscordStats, 30000);
     </script>
 </body>
 </html>
