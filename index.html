@@ -177,7 +177,7 @@
         }
 
         .progress-bar-fill {
-            width: 7%; /* 7 out of 100 */
+            width: 7%;
             height: 100%;
             background-color: var(--accent);
             border-radius: 99px;
@@ -207,7 +207,6 @@
             transform: translateY(-1px);
         }
 
-        /* Simple Footer */
         footer {
             color: var(--text-muted);
             font-size: 0.8rem;
@@ -222,9 +221,9 @@
     <div class="container">
         <!-- Live Status Indicators -->
         <div class="badge-row">
-            <div class="status-badge">
-                <span class="dot"></span>
-                <span>BOT BETA ONLINE</span>
+            <div class="status-badge" id="bot-status-container">
+                <span class="dot" id="status-dot"></span>
+                <span id="bot-status-text">BOT BETA ONLINE</span>
             </div>
             <div class="status-badge">
                 <span style="color: var(--status-orange);">●</span>
@@ -256,15 +255,15 @@
         <div class="member-cap-box">
             <div class="member-cap-header">
                 <span>Beta Access Capacity</span>
-                <span class="member-count">7 / 100 <span class="member-cap-total">spots filled</span></span>
+                <span class="member-count" id="member-count">7 / 100 <span class="member-cap-total">spots filled</span></span>
             </div>
             <div class="progress-bar-bg">
-                <div class="progress-bar-fill"></div>
+                <div class="progress-bar-fill" id="progress-bar-fill"></div>
             </div>
         </div>
 
         <!-- Discord Call to Action Button -->
-        <a href="https://discord.gg/qekFr6M2Ww" target="_blank" class="btn-discord">
+        <a href="https://discord.gg/qekFr6M2Ww" target="_blank" class="btn-discord" id="discord-btn">
             Join Discord (93 Spots Left)
         </a>
     </div>
@@ -273,5 +272,41 @@
         &copy; zwytrades. All rights reserved.
     </footer>
 
+    <script>
+        async function loadConfig() {
+            try {
+                // Fetch config with cache-busting timestamp
+                const res = await fetch('./config.json?v=' + new Date().getTime());
+                const data = await res.json();
+                
+                // Update member counts dynamically
+                const spots = data.spots_filled || 7;
+                const max = data.max_spots || 100;
+                const remaining = max - spots;
+                const fillPercentage = Math.min((spots / max) * 100, 100);
+
+                document.getElementById('member-count').innerHTML = `${spots} / ${max} <span class="member-cap-total">spots filled</span>`;
+                document.getElementById('progress-bar-fill').style.width = `${fillPercentage}%`;
+                document.getElementById('discord-btn').innerText = `Join Discord (${remaining} Spots Left)`;
+
+                // Update status badge dynamically
+                const statusText = document.getElementById('bot-status-text');
+                const statusDot = document.getElementById('status-dot');
+                if (data.bot_status === "OFFLINE") {
+                    statusText.innerText = "BOT BETA OFFLINE";
+                    statusDot.style.backgroundColor = "#ef4444";
+                    statusDot.style.boxShadow = "0 0 8px #ef4444";
+                } else {
+                    statusText.innerText = "BOT BETA ONLINE";
+                    statusDot.style.backgroundColor = "var(--status-green)";
+                    statusDot.style.boxShadow = "0 0 8px var(--status-green)";
+                }
+            } catch (e) {
+                console.warn("Using default static config fallback.", e);
+            }
+        }
+
+        loadConfig();
+    </script>
 </body>
 </html>
