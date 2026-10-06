@@ -169,6 +169,7 @@
             background-color: var(--border);
             border-radius: 99px;
             overflow: hidden;
+            margin-bottom: 1rem;
         }
 
         .progress-bar-fill {
@@ -177,6 +178,31 @@
             background-color: var(--accent);
             border-radius: 99px;
             transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Live Member Avatars Strip */
+        .online-avatars-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            overflow-x: auto;
+            padding-top: 0.5rem;
+        }
+
+        .avatar-img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid var(--bg);
+            object-fit: cover;
+            background-color: var(--border);
+        }
+
+        .avatar-more {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-left: 6px;
+            font-weight: 500;
         }
 
         .btn-discord {
@@ -224,7 +250,7 @@
             </div>
         </div>
 
-        <h1>zwytrades bot</h1>
+        <h1 id="server-title">zwytrades bot</h1>
         <p class="subtitle">Automated liquidity screening and real-time market telemetry.</p>
 
         <div class="metrics-grid">
@@ -242,6 +268,7 @@
             </div>
         </div>
 
+        <!-- Member Cap Progress & Live Avatars Box -->
         <div class="member-cap-box">
             <div class="member-cap-header">
                 <span>Beta Access Capacity</span>
@@ -249,6 +276,11 @@
             </div>
             <div class="progress-bar-bg">
                 <div class="progress-bar-fill" id="progress-bar-fill" style="width: 7%;"></div>
+            </div>
+
+            <!-- Avatars of Active Online Members -->
+            <div class="online-avatars-row" id="avatar-container">
+                <!-- Avatars render dynamically here -->
             </div>
         </div>
 
@@ -271,17 +303,48 @@
                 const data = await response.json();
                 
                 if (data && data.presence_count !== undefined) {
-                    // Discord returns online presence count
-                    const onlineMembers = Math.max(data.presence_count, 7);
-                    const spotsRemaining = Math.max(0, MAX_SPOTS - onlineMembers);
-                    const fillPercentage = Math.min(100, (onlineMembers / MAX_SPOTS) * 100);
+                    const onlineCount = data.presence_count || 7;
+                    const spotsRemaining = Math.max(0, MAX_SPOTS - onlineCount);
+                    const fillPercentage = Math.min(100, (onlineCount / MAX_SPOTS) * 100);
 
-                    document.getElementById('member-count').innerHTML = `${onlineMembers} / ${MAX_SPOTS} <span class="member-cap-total">spots filled</span>`;
+                    // Update Counts & Progress Bar
+                    document.getElementById('member-count').innerHTML = `${onlineCount} / ${MAX_SPOTS} <span class="member-cap-total">spots filled</span>`;
                     document.getElementById('progress-bar-fill').style.width = `${fillPercentage}%`;
-                    document.getElementById('discord-btn').innerText = `Join Discord (${spotsRemaining} Spots Left)`;
+                    
+                    // Direct Instant Invite Link if Widget generated one
+                    const joinBtn = document.getElementById('discord-btn');
+                    joinBtn.innerText = `Join Discord (${spotsRemaining} Spots Left)`;
+                    if (data.instant_invite) {
+                        joinBtn.href = data.instant_invite;
+                    }
+
+                    // Render Online Member Profile Avatars
+                    if (data.members && data.members.length > 0) {
+                        const avatarContainer = document.getElementById('avatar-container');
+                        avatarContainer.innerHTML = ''; // Clear existing
+                        
+                        // Render up to 8 member avatars
+                        const displayMembers = data.members.slice(0, 8);
+                        displayMembers.forEach(member => {
+                            if (member.avatar_url) {
+                                const img = document.createElement('img');
+                                img.src = member.avatar_url;
+                                img.title = member.username;
+                                img.className = 'avatar-img';
+                                avatarContainer.appendChild(img);
+                            }
+                        });
+
+                        if (data.members.length > 8) {
+                            const moreTag = document.createElement('span');
+                            moreTag.className = 'avatar-more';
+                            moreTag.innerText = `+${data.members.length - 8} online`;
+                            avatarContainer.appendChild(moreTag);
+                        }
+                    }
                 }
             } catch (err) {
-                console.warn("Discord Widget pending activation on server settings.", err);
+                console.warn("Discord Widget sync waiting for Server Settings > Widget activation.", err);
             }
         }
 
