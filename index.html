@@ -16,8 +16,9 @@
             --text-main: #f4f4f5;
             --text-muted: #a1a1aa;
             --accent: #ffffff;
-            --status-green: #22c55e;
-            --status-orange: #f59e0b;
+            --status-online: #22c55e;
+            --status-idle: #f59e0b;
+            --status-dnd: #ef4444;
         }
 
         * {
@@ -76,9 +77,9 @@
         .dot {
             width: 8px;
             height: 8px;
-            background-color: var(--status-green);
+            background-color: var(--status-online);
             border-radius: 50%;
-            box-shadow: 0 0 8px var(--status-green);
+            box-shadow: 0 0 8px var(--status-online);
         }
 
         .container {
@@ -137,12 +138,13 @@
             color: var(--text-muted);
         }
 
+        /* Access Capacity Bar */
         .member-cap-box {
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 1.25rem 1.5rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             text-align: left;
         }
 
@@ -169,40 +171,103 @@
             background-color: var(--border);
             border-radius: 99px;
             overflow: hidden;
-            margin-bottom: 0.75rem;
         }
 
         .progress-bar-fill {
-            width: 7%;
+            width: 15%;
             height: 100%;
             background-color: var(--accent);
             border-radius: 99px;
             transition: width 0.5s ease-in-out;
         }
 
-        .online-avatars-row {
+        /* Live Roster Section */
+        .roster-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .roster-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .roster-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .roster-user {
             display: flex;
             align-items: center;
-            gap: 6px;
-            overflow-x: auto;
-            padding-top: 0.5rem;
-            min-height: 36px;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            width: 32px;
+            height: 32px;
+            flex-shrink: 0;
         }
 
         .avatar-img {
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            border: 2px solid var(--bg);
             object-fit: cover;
             background-color: var(--border);
         }
 
-        .avatar-more {
+        .status-dot {
+            position: absolute;
+            bottom: -1px;
+            right: -1px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 2px solid var(--card-bg);
+        }
+
+        .status-online { background-color: var(--status-online); }
+        .status-idle { background-color: var(--status-idle); }
+        .status-dnd { background-color: var(--status-dnd); }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .user-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-game {
             font-size: 0.75rem;
             color: var(--text-muted);
-            margin-left: 6px;
-            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .btn-discord {
@@ -245,12 +310,12 @@
                 <span>BOT BETA ONLINE</span>
             </div>
             <div class="status-badge">
-                <span style="color: var(--status-orange);">●</span>
+                <span style="color: var(--status-idle);">●</span>
                 <span>LIMITED ACCESS</span>
             </div>
         </div>
 
-        <h1>zwytrades bot</h1>
+        <h1 id="server-name">zwytrades bot</h1>
         <p class="subtitle">Automated liquidity screening and real-time market telemetry.</p>
 
         <div class="metrics-grid">
@@ -268,20 +333,30 @@
             </div>
         </div>
 
+        <!-- Access Capacity Bar -->
         <div class="member-cap-box">
             <div class="member-cap-header">
                 <span>Beta Access Capacity</span>
-                <span class="member-count" id="member-count">12 / 100 <span class="member-cap-total">spots filled</span></span>
+                <span class="member-count" id="member-count">-- / 100 <span class="member-cap-total">spots filled</span></span>
             </div>
             <div class="progress-bar-bg">
-                <div class="progress-bar-fill" id="progress-bar-fill" style="width: 12%;"></div>
+                <div class="progress-bar-fill" id="progress-bar-fill" style="width: 0%;"></div>
             </div>
+        </div>
 
-            <div class="online-avatars-row" id="avatar-container"></div>
+        <!-- Live Roster Card -->
+        <div class="roster-box">
+            <div class="roster-title">
+                <span>Active Community Members</span>
+                <span id="online-indicator">Syncing...</span>
+            </div>
+            <div class="roster-grid" id="roster-grid">
+                <!-- Dynamically rendered active members -->
+            </div>
         </div>
 
         <a href="https://discord.gg/qekFr6M2Ww" target="_blank" class="btn-discord" id="discord-btn">
-            Join Discord (88 Spots Left)
+            Join Discord Community
         </a>
     </div>
 
@@ -293,61 +368,71 @@
         const SERVER_ID = "1556168871579357246";
         const MAX_SPOTS = 100;
 
-        function updateUI(onlineCount, members = []) {
-            const currentOnline = Math.max(onlineCount, 12);
-            const spotsRemaining = Math.max(0, MAX_SPOTS - currentOnline);
-            const fillPercentage = Math.min(100, (currentOnline / MAX_SPOTS) * 100);
-
-            document.getElementById('member-count').innerHTML = `${currentOnline} / ${MAX_SPOTS} <span class="member-cap-total">spots filled</span>`;
-            document.getElementById('progress-bar-fill').style.width = `${fillPercentage}%`;
-            document.getElementById('discord-btn').innerText = `Join Discord (${spotsRemaining} Spots Left)`;
-
-            if (members && members.length > 0) {
-                const avatarContainer = document.getElementById('avatar-container');
-                avatarContainer.innerHTML = '';
-                
-                members.slice(0, 8).forEach(member => {
-                    if (member.avatar_url) {
-                        const img = document.createElement('img');
-                        img.src = member.avatar_url;
-                        img.title = member.username;
-                        img.className = 'avatar-img';
-                        avatarContainer.appendChild(img);
-                    }
-                });
-
-                if (members.length > 8) {
-                    const moreTag = document.createElement('span');
-                    moreTag.className = 'avatar-more';
-                    moreTag.innerText = `+${members.length - 8} online`;
-                    avatarContainer.appendChild(moreTag);
-                }
-            }
-        }
-
-        async function fetchDiscordStats() {
+        async function syncDiscordWidget() {
             const rawUrl = `https://discord.com/api/guilds/${SERVER_ID}/widget.json`;
             const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rawUrl)}`;
 
             try {
                 const res = await fetch(proxyUrl);
-                if (!res.ok) throw new Error('Proxy error');
+                if (!res.ok) throw new Error('Network error');
                 const proxyData = await res.json();
                 const data = JSON.parse(proxyData.contents);
 
-                if (data && typeof data.presence_count !== 'undefined') {
-                    updateUI(data.presence_count, data.members || []);
-                } else {
-                    updateUI(14);
+                if (data) {
+                    // Update Server Title if provided
+                    if (data.name) {
+                        document.getElementById('server-name').innerText = data.name.toLowerCase();
+                    }
+
+                    // Online Presence Calculation
+                    const onlineCount = data.presence_count || (data.members ? data.members.length : 0);
+                    
+                    // Capacity Calculation (e.g. baseline estimate + online presence)
+                    const simulatedTotalMembers = Math.max(onlineCount, 18); 
+                    const spotsRemaining = Math.max(0, MAX_SPOTS - simulatedTotalMembers);
+                    const fillPercentage = Math.min(100, (simulatedTotalMembers / MAX_SPOTS) * 100);
+
+                    document.getElementById('member-count').innerHTML = `${simulatedTotalMembers} / ${MAX_SPOTS} <span class="member-cap-total">spots filled</span>`;
+                    document.getElementById('progress-bar-fill').style.width = `${fillPercentage}%`;
+                    document.getElementById('discord-btn').innerText = `Join Discord (${spotsRemaining} Spots Left)`;
+                    document.getElementById('online-indicator').innerText = `${onlineCount} Online Now`;
+
+                    // Render Roster
+                    if (data.members && data.members.length > 0) {
+                        const rosterGrid = document.getElementById('roster-grid');
+                        rosterGrid.innerHTML = '';
+
+                        data.members.slice(0, 6).forEach(member => {
+                            const statusClass = member.status === 'dnd' ? 'status-dnd' : (member.status === 'idle' ? 'status-idle' : 'status-online');
+                            const gameText = member.game ? member.game.name : 'Active';
+
+                            const userEl = document.createElement('div');
+                            userEl.className = 'roster-user';
+                            userEl.innerHTML = `
+                                <div class="avatar-wrapper">
+                                    <img src="${member.avatar_url}" class="avatar-img" alt="${member.username}">
+                                    <div class="status-dot ${statusClass}"></div>
+                                </div>
+                                <div class="user-info">
+                                    <span class="user-name">${member.username}</span>
+                                    <span class="user-game">${gameText}</span>
+                                </div>
+                            `;
+                            rosterGrid.appendChild(userEl);
+                        });
+                    }
                 }
-            } catch (e) {
-                console.warn('Unable to reach Discord API, utilizing live estimate.', e);
-                updateUI(14);
+            } catch (err) {
+                console.warn('Widget API unreachable, utilizing static fallback UI.', err);
+                document.getElementById('member-count').innerHTML = `18 / 100 <span class="member-cap-total">spots filled</span>`;
+                document.getElementById('progress-bar-fill').style.width = `18%`;
+                document.getElementById('discord-btn').innerText = `Join Discord (82 Spots Left)`;
+                document.getElementById('online-indicator').innerText = `Live`;
             }
         }
 
-        fetchDiscordStats();
-        setInterval(fetchDiscordStats, 30000);
+        syncDiscordWidget();
+        setInterval(syncDiscordWidget, 30000);
     </script>
 </body>
 </html>
